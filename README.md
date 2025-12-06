@@ -3,7 +3,7 @@
 A Django REST Framework API for tracking business travel distances with automatic Google Maps integration and manual entry options. Generates monthly reports with Excel/PDF export for accounting purposes.
 
 **Built by:** CodeNob Dev (Anti-Vibe Coding)
-**Author:** Sami Lammi
+**Author:** Sami Tommilammi
 **Tech Stack:** Django 4.2, DRF, PostgreSQL, JWT, Celery, Google Maps API
 **Security:** Rate limiting, input validation, JWT authentication, permission checks
 
@@ -180,7 +180,8 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 ```
 
 ### 5. Run Migrations
-```bash
+```bashgit push -u origin main
+
 python manage.py makemigrations
 python manage.py migrate
 ```
