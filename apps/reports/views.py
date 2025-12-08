@@ -8,6 +8,9 @@ This file contains API endpoints for:
 - Report generation (basic, no PDF/Excel yet)
 """
 
+import os
+from django.conf import settings
+from django.core.files import File
 from rest_framework import generics, status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -77,7 +80,7 @@ class GenerateReportView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
-        """Handle POST request - generate monthly report"""
+        """Handle POST request - generate monthly report with PDF"""
 
         # Validate request data
         serializer = ReportGenerateSerializer(data=request.data)
@@ -107,7 +110,9 @@ class GenerateReportView(APIView):
             )
 
         # Get trips for this month
-        trips = Trip.objects.filter(user=user, date__year=year, date__month=month)
+        trips = Trip.objects.filter(
+            user=user, date__year=year, date__month=month
+        ).order_by("date")
 
         trip_count = trips.count()
 
@@ -129,7 +134,38 @@ class GenerateReportView(APIView):
             user=user, year=year, month=month, total_km=total_km, trip_count=trip_count
         )
 
-        # TODO: Generate PDF and Excel files here (future feature)
+        # Generate PDF
+        try:
+            from django.conf import settings
+            from django.core.files import File
+            from .generators import PDFReportGenerator
+            import os
+
+            # Create filename
+            filename = f"report_{user.username}_{year}_{month:02d}.pdf"
+
+            # Full path to save PDF
+            pdf_dir = os.path.join(settings.MEDIA_ROOT, "reports", "pdf")
+            os.makedirs(pdf_dir, exist_ok=True)
+            pdf_path = os.path.join(pdf_dir, filename)
+
+            # Generate PDF
+            generator = PDFReportGenerator()
+            generator.generate_report(report, trips, pdf_path)
+
+            # Save file reference to model
+            with open(pdf_path, "rb") as f:
+                report.pdf_file.save(filename, File(f), save=True)
+
+            logger.info(
+                f"PDF generated for {user.username}: "
+                f"{year}/{month} - {trip_count} trips, {total_km} km"
+            )
+
+        except Exception as e:
+            logger.exception(f"Failed to generate PDF: {str(e)}")
+            # Don't fail the whole request if PDF generation fails
+            # Report is still created, just without PDF
 
         logger.info(
             f"Report generated for {user.username}: "
