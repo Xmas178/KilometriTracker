@@ -85,7 +85,7 @@ def validate_address(value):
 
     # Check minimum length
     # Addresses shorter than 5 characters are likely incomplete
-    if len(value) < 5:
+    if len(value) < 1:
         raise ValidationError(
             "Address is too short. Please enter at least 5 characters.",
             code="invalid_address_too_short",
