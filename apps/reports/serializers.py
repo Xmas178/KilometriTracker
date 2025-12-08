@@ -53,7 +53,15 @@ class MonthlyReportSerializer(serializers.ModelSerializer):
             "sent_at",
             "created_at",
         ]
-        read_only_fields = "__all__"  # All fields are read-only
+        read_only_fields = [
+            "id",
+            "user",
+            "user_display",
+            "period_display",
+            "pdf_url",
+            "excel_url",
+            "created_at",
+        ]
 
     def get_pdf_url(self, obj):
         """
